@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <!-- 
+        =========================================================
+        EXCEL OCR OTOMASYONU
+        =========================================================
+        Geliştirici: Furkan
+        Açıklama: Görsellerdeki (PNG/JPG) tabloları okuyarak (.xlsx) 
+        formatında indirilebilir bir Excel dosyasına dönüştüren 
+        arayüz uygulamasıdır. Kod mimarisi "Sunum/Üretim" kalitesinde
+        modülerleştirilmiştir (HTML, CSS, JS ayrı dosyalardadır).
+        =========================================================
+    -->
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Excel OCR Otomasyonu | Yapay Zeka Destekli Tablo Çıkarıcı</title>
+    
+    <!-- Google Fonts (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    
+    <!-- FontAwesome (İkonlar için) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    
+    <!-- Ana Stil Dosyası (Modüler CSS) -->
+    <link href="style.css" rel="stylesheet"/>
+    
+    <!-- Confetti Animasyonu için Kütüphane -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+    <!-- Arka plan estetik baloncuk animasyonları -->
+    <div class="background-orbs" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <!-- Uygulama İçeriği (Ana Kapsayıcı) -->
+    <main class="container">
+        
+        <!-- Üst Başlık ve Uygulama Açıklaması -->
+        <header class="app-header">
+            <h1 class="app-title">
+                <i class="fa-solid fa-file-excel"></i> 
+                Excel OCR Otomasyonu
+            </h1>
+            <p class="app-desc">
+                Tablo içeren görseli sisteme yükleyin veya yapıştırın. Saniyeler içinde kusursuz bir Excel dosyasına dönüşsün.
+            </p>
+        </header>
+
+        <!-- Form ve Veri Giriş Alanı -->
+        <section class="app-box">
+            <form id="form-excel">
+                
+                <!-- 1. Adım: Dosya Yükleme Alanı (Sürükle & Bırak & Yapıştır) -->
+                <div class="drop-zone" id="drop-zone" aria-label="Görsel Yükleme Alanı">
+                    <i class="fa-solid fa-cloud-arrow-up" id="drop-icon"></i>
+                    
+                    <div class="drop-zone-text" id="drop-text">Tablo Görselini Sürükle, Seç veya <b>Yapıştır (Ctrl+V)</b></div>
+                    <div class="drop-zone-hint">Desteklenen Formatlar: PNG, JPG, JPEG, Ekran Görüntüsü Panosu</div>
+                    
+                    <!-- Görsel Seçildiğinde Gösterilecek Önizleme Alanı -->
+                    <img alt="Yüklenen Tablo Önizlemesi" id="preview-img" src=""/>
+                    
+                    <!-- Arka planda çalışan gerçek dosya seçici input (Kullanıcıya Gizli) -->
+                    <input accept="image/png, image/jpeg, image/jpg" id="file-input" type="file" title="Görsel Seç"/>
+                </div>
+
+                <!-- 2. Adım: Excel Dosya Adı Belirleme -->
+                <div class="form-group">
+                    <label class="form-label" for="excel-target">Oluşturulacak Excel Dosyası Adı</label>
+                    <input class="form-control" id="excel-target" name="excel_name" placeholder="Örn: finans_raporu_2023" required="" type="text"/>
+                </div>
+
+                <!-- 3. Adım: API'ye Gönderme Butonu -->
+                <button class="btn-submit" id="btn-excel" type="submit">
+                    <!-- İşlem sırasında dönecek olan yükleme ikonu (Varsayılan olarak gizli) -->
+                    <span class="loader" id="loader-excel"></span>
+                    <span id="text-excel">Görseli Excel'e Dönüştür <i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                </button>
+            </form>
+
+            <!-- Sonuç, Hatalar ve İndirme Linkinin Gösterildiği Kutu -->
+            <div class="result-box" id="result-excel" aria-live="polite"></div>
+        </section>
+        
+    </main>
+
+    <!-- Ana JavaScript Dosyası (Modüler JS) -->
+    <script src="app.js"></script>
+</body>
+</html>
