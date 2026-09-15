@@ -1,0 +1,19 @@
+# Gizli dosyalar (BUNLAR GITHUB'A GİTMEMELİ)
+.env
+.env.local
+.env.*
+
+# MacOS sistem dosyaları
+.DS_Store
+
+# Python gereksinimleri
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Node/Vercel dosyaları
+.vercel/
+node_modules/
