@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+    <title>ExcelAs | Yapay Zeka Destekli Tablo Dönüştürücü</title>
+    
+    <!-- Favicon & Mobil Uygulama İkonları (Programa Özel) -->
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png"/>
+    <link rel="shortcut icon" href="/favicon.ico"/>
+    <link rel="manifest" href="/manifest.json"/>
+    <meta name="theme-color" content="#10b981"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+    <meta name="apple-mobile-web-app-title" content="ExcelAs"/>
+    
+    <!-- Meta Açıklamaları ve Arama Motoru Optimizasyonu (SEO) -->
+    <meta name="description" content="Görsellerdeki ve ekran görüntülerindeki tabloları saniyeler içinde yapay zeka ile sekmeli (.xlsx) Excel ve CSV dosyasına dönüştürün. Çoklu sayfa desteği, renk ve stil koruma."/>
+    <meta name="keywords" content="ExcelAs, Excel OCR, tablo dönüştürücü, yapay zeka excel, resimden excel, tablo çıkarma, gemini ocr, multi-sheet excel"/>
+    <meta name="author" content="ExcelAs"/>
+
+    <!-- Open Graph (Facebook, WhatsApp, LinkedIn, Telegram Paylaşım Önizlemesi) -->
+    <meta property="og:type" content="website"/>
+    <meta property="og:url" content="https://excelas.vercel.app/"/>
+    <meta property="og:title" content="ExcelAs | Yapay Zeka ile Tablo Dönüştürücü"/>
+    <meta property="og:description" content="Ekran görüntüleri ve fotoğraflardaki tabloları renkleri, sayıları ve sekmeleriyle eksiksiz Excel (.xlsx) çalışma kitabına çevirin."/>
+    <meta property="og:image" content="https://excelas.vercel.app/assets/og_preview.png"/>
+    <meta property="og:image:secure_url" content="https://excelas.vercel.app/assets/og_preview.png"/>
+    <meta property="og:image:type" content="image/png"/>
+    <meta property="og:image:width" content="1200"/>
+    <meta property="og:image:height" content="630"/>
+    <meta property="og:image:alt" content="ExcelAs - Görselleri Çoklu Sayfalı Excel'e Dönüştürün"/>
+    <meta property="og:site_name" content="ExcelAs"/>
+    <meta property="og:locale" content="tr_TR"/>
+
+    <!-- Twitter Card (X / Twitter Paylaşım Önizlemesi) -->
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:url" content="https://excelas.vercel.app/"/>
+    <meta name="twitter:title" content="ExcelAs | Yapay Zeka ile Tablo Dönüştürücü"/>
+    <meta name="twitter:description" content="Görsellerdeki tabloları çoklu sayfa desteğiyle anında sekmeli Excel (.xlsx) ve CSV'ye dönüştürün."/>
+    <meta name="twitter:image" content="https://excelas.vercel.app/assets/og_preview.png"/>
+    <meta name="twitter:image:alt" content="ExcelAs - Görseli Excel'e Dönüştür"/>
+
+    <!-- Google Fonts (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    
+    <!-- FontAwesome (İkonlar için) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    
+    <!-- Ana Stil Dosyası (Modüler CSS) -->
+    <link href="/style.css" rel="stylesheet"/>
+    
+    <!-- Confetti Animasyonu için Kütüphane -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+    <!-- Arka plan estetik baloncuk animasyonları -->
+    <div class="background-orbs" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <!-- Uygulama İçeriği (Ana Kapsayıcı) -->
+    <main class="container">
+        
+        <!-- Üst Köşeler: Güvenlik Rozeti, Tema Değiştirici ve Canlı Kullanım Sayacı -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="status-badge shield-badge" title="Sistem bot ve aşırı yük koruması altındadır">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Güvenlik Kalkanı <b>Aktif</b></span>
+                </div>
+                <button type="button" class="theme-toggle-btn" id="theme-toggle" title="Koyu / Açık Tema Değiştir" aria-label="Tema Değiştir">
+                    <span id="theme-icon" class="theme-icon-slot"></span>
+                </button>
+            </div>
+            
+            <div class="status-badge quota-badge" id="quota-badge" title="Dakikalık kalan ücretsiz dönüştürme hakkınız">
+                <i class="fa-solid fa-bolt"></i>
+                <span>Kalan Hak: <strong id="quota-count">8</strong>/<span id="quota-max">8</span></span>
+                <span class="quota-pill-timer" id="quota-badge-timer">
+                    <i class="fa-regular fa-clock"></i> <span id="quota-badge-seconds">60s</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Üst Başlık ve Uygulama Açıklaması -->
+        <header class="app-header">
+            <div class="brand-pill" title="ExcelAs">
+                <img src="/assets/favicon.svg" alt="ExcelAs Logo" class="brand-pill-logo"/>
+                <span>ExcelAs</span>
+            </div>
+            <h1 class="app-title">
+                <i class="fa-solid fa-file-excel"></i> 
+                Excel OCR Otomasyonu
+            </h1>
+            <p class="app-desc">
+                Tablo içeren görseli yükleyin, seçin veya yapıştırın. Saniyeler içinde kusursuz bir Excel dosyasına dönüşsün.
+            </p>
+        </header>
+
+        <!-- Form ve Veri Giriş Alanı -->
+        <section class="app-box">
+            <form id="form-excel">
+                <div class="workspace-grid">
+                    <!-- Sol Kolon: Geniş Görsel Yükleme Alanı ve Çoklu Sayfa Yönetimi -->
+                    <div class="workspace-col workspace-left">
+                        <!-- Üst Bar: Mod Seçici (Tek Sayfa / Çoklu Sayfa) ve Sayfa Sayısı Seçimi -->
+                        <div class="workspace-mode-selector">
+                            <div class="mode-segmented" role="tablist">
+                                <button type="button" class="mode-seg-btn active" id="mode-single" data-mode="single" role="tab" aria-selected="true">
+                                    <i class="fa-solid fa-file"></i> Tek Sayfa
+                                </button>
+                                <button type="button" class="mode-seg-btn" id="mode-multi" data-mode="multi" role="tab" aria-selected="false">
+                                    <i class="fa-solid fa-layer-group"></i> Çoklu Sayfa
+                                </button>
+                            </div>
+
+                            <!-- Çoklu Sayfa Seçildiğinde Görünen Sayfa Sayısı Seçici (Maks 8) -->
+                            <div class="multi-count-selector" id="multi-count-selector" style="display: none;">
+                                <span class="count-label">Sayfa:</span>
+                                <div class="count-chips" role="group" aria-label="Sayfa Sayısı">
+                                    <button type="button" class="count-chip active" data-count="2">2</button>
+                                    <button type="button" class="count-chip" data-count="3">3</button>
+                                    <button type="button" class="count-chip" data-count="4">4</button>
+                                    <button type="button" class="count-chip" data-count="5">5</button>
+                                    <button type="button" class="count-chip" data-count="6">6</button>
+                                    <button type="button" class="count-chip" data-count="7">7</button>
+                                    <button type="button" class="count-chip" data-count="8">8</button>
+                                </div>
+                                <button type="button" class="btn-sample-inline" id="btn-load-sample" title="Test etmek için 2 adet örnek tabloyu otomatik doldurur">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Örnek Doldur
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Görsel Yükleme ve Yapıştırma Alanı (Aktif Sayfaya Özel) -->
+                        <div class="drop-zone" id="drop-zone" aria-label="Görsel Yükleme Alanı">
+                            <!-- Çoklu Modda Aktif Sayfa Bilgisi -->
+                            <div class="active-sheet-badge" id="active-sheet-badge" style="display: none;">
+                                <i class="fa-solid fa-file-lines"></i>
+                                <span id="active-sheet-name">1. Sayfa Düzenleniyor</span>
+                            </div>
+
+                            <button type="button" class="btn-clear-image" id="btn-clear-image" title="Seçilen Görseli Kaldır">
+                                <i class="fa-solid fa-xmark"></i> Temizle
+                            </button>
+                            
+                            <i class="fa-solid fa-cloud-arrow-up" id="drop-icon"></i>
+                            
+                            <div class="drop-zone-text" id="drop-text">Tablo Görselini Sürükle, Seç veya <b>Yapıştır (Ctrl+V)</b></div>
+                            <div class="drop-zone-hint" id="drop-hint">Desteklenen Formatlar: PNG, JPG, JPEG</div>
+                            
+                            <!-- Tekil Görsel Seçildiğinde Gösterilecek Önizleme Alanı -->
+                            <img alt="Yüklenen Tablo Önizlemesi" id="preview-img" src=""/>
+                        </div>
+
+                        <!-- Alt Sayfa Yönetim Çubuğu (1. Sayfa, 2. Sayfa ... Sekmeleri ve Sıralama Butonları) -->
+                        <div class="sheet-nav-bar" id="sheet-nav-bar" style="display: none;">
+                            <div class="sheet-tabs-list" id="sheet-tabs-list">
+                                <!-- JS dinamik olarak sekmeleri, durum ikonlarını ve sıra değiştirme butonlarını üretir -->
+                            </div>
+                            <button type="button" class="btn-add-sheet" id="btn-add-sheet" title="Yeni sayfa ekle (Maks 8)">
+                                <i class="fa-solid fa-plus"></i> Sayfa Ekle
+                            </button>
+                        </div>
+
+                        <!-- Arka planda çalışan gerçek dosya seçici input -->
+                        <input accept="image/png, image/jpeg, image/jpg" id="file-input" type="file" title="Görselleri Seç"/>
+                    </div>
+
+                    <!-- Sağ Kolon: Ayarlar, Sayaç ve Eylem Butonları -->
+                    <div class="workspace-col workspace-right">
+                        <!-- 2. Adım: Excel Dosya Adı Belirleme -->
+                        <div class="form-group">
+                            <label class="form-label" for="excel-target">Oluşturulacak Excel Dosyası Adı</label>
+                            <input class="form-control" id="excel-target" name="excel_name" placeholder="Örn: finans_raporu_2023" required="" type="text"/>
+                        </div>
+
+                        <!-- Canlı Dakikalık Limit ve Sayaç Kartı (Rate Limit Tracker) -->
+                        <div class="quota-card" id="quota-card">
+                            <div class="quota-card-header">
+                                <div class="quota-card-title">
+                                    <i class="fa-solid fa-gauge-high"></i>
+                                    <span>Dakikalık İşlem Sayacı</span>
+                                </div>
+                                <div class="quota-card-timer" id="quota-card-timer" title="Süre bitiminde dakikalık haklarınız otomatik olarak 8'e yenilenir">
+                                    <i class="fa-regular fa-clock"></i>
+                                    <span>Yenilenme:</span>
+                                    <strong id="quota-timer-text">60 sn</strong>
+                                </div>
+                            </div>
+                            <div class="quota-card-body">
+                                <div class="quota-slots-wrap">
+                                    <div class="quota-slots" id="quota-slots" aria-label="Kalan kullanım hakları">
+                                        <span class="quota-dot active" data-slot="1" title="1. Dönüştürme Hakkı"></span>
+                                        <span class="quota-dot active" data-slot="2" title="2. Dönüştürme Hakkı"></span>
+                                        <span class="quota-dot active" data-slot="3" title="3. Dönüştürme Hakkı"></span>
+                                        <span class="quota-dot active" data-slot="4" title="4. Dönüştürme Hakkı"></span>
+                                        <span class="quota-dot active" data-slot="5" title="5. Dönüştürme Hakkı"></span>
+                                        <span class="quota-dot active" data-slot="6" title="6. Dönüştürme Hakkı"></span>
+                                        <span class="quota-dot active" data-slot="7" title="7. Dönüştürme Hakkı"></span>
+                                        <span class="quota-dot active" data-slot="8" title="8. Dönüştürme Hakkı"></span>
+                                    </div>
+                                    <span class="quota-status-text" id="quota-status-text">
+                                        Kalan Hak: <strong id="tracker-remaining-text">8</strong> / 8
+                                    </span>
+                                </div>
+                                <div class="quota-progress-track">
+                                    <div class="quota-progress-bar" id="quota-progress-bar" style="width: 100%;"></div>
+                                </div>
+                            </div>
+                            <div class="quota-card-footer" id="quota-card-footer">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span id="quota-footer-desc">Google AI altyapısıyla dakikada en fazla 8 işlem / sayfa dönüştürülebilir.</span>
+                            </div>
+                        </div>
+
+                        <!-- 3. Adım: API'ye Gönderme Butonu -->
+                        <button class="btn-submit" id="btn-excel" type="submit">
+                            <!-- İşlem sırasında dönecek olan yükleme ikonu (Varsayılan olarak gizli) -->
+                            <span class="loader" id="loader-excel"></span>
+                            <span id="text-excel">Görseli Excel'e Dönüştür <i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Sonuç, Hatalar ve İndirme Linkinin Gösterildiği Kutu -->
+            <div class="result-box" id="result-excel" aria-live="polite"></div>
+        </section>
+        
+    </main>
+
+    <!-- ÇOKLU SAYFA VE İŞLEM SÜRESİ BİLGİLENDİRME MODALI (PROCESSING POP-UP) -->
+    <div class="modal-overlay" id="processing-modal" aria-hidden="true">
+        <div class="modal-card processing-card" role="dialog" aria-modal="true" aria-labelledby="processing-title">
+            <div class="processing-icon-wrap">
+                <div class="processing-pulse-ring"></div>
+                <div class="processing-icon">
+                    <i class="fa-solid fa-file-excel"></i>
+                </div>
+            </div>
+            <h2 class="modal-title" id="processing-title">Tablolarınız İşleniyor...</h2>
+            <p class="modal-desc" id="processing-desc">
+                Yapay zeka çoklu sayfa ve tablo hücrelerini analiz ediyor. Lütfen sayfayı kapatmadan bekleyiniz.
+            </p>
+            
+            <div class="processing-status-box">
+                <span class="processing-spinner"></span>
+                <span id="processing-step-text">Görseller yapay zeka modeline aktarılıyor...</span>
+            </div>
+
+            <div class="processing-timer-box">
+                <i class="fa-regular fa-clock"></i>
+                <span>Geçen süre:</span>
+                <strong id="processing-timer-text">0 sn</strong>
+            </div>
+
+            <div class="processing-tip">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span id="processing-tip-text">Çok sayfalı belgelerde (8 sayfaya kadar) analiz biraz zaman alabilir, sistem arka planda tabloları oluşturmaktadır.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- KULLANIM LİMİTİ DOLDUĞUNDA AÇILACAK GÜVENLİK MODALI -->
+    <div class="modal-overlay" id="limit-modal" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <div class="modal-icon">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+            <h2 class="modal-title" id="modal-title">Kullanım Sınırına Ulaşıldı</h2>
+            <p class="modal-desc" id="modal-desc">
+                Google AI ücretsiz dakikalık kullanım sınırını korumak ve sunucu kilitlenmelerini önlemek adına yeni istekler geçici olarak duraklatıldı.
+            </p>
+            <div class="modal-timer-box">
+                <i class="fa-regular fa-clock"></i>
+                <span>Yenilenmesine kalan süre:</span>
+                <strong id="modal-timer-text">60 sn</strong>
+            </div>
+            <button class="btn-modal-close" id="btn-modal-close" type="button">
+                Tamam, Anladım
+            </button>
+        </div>
+    </div>
+
+    <!-- Ana JavaScript Dosyası (Modüler JS) -->
+    <script src="/app.js"></script>
+</body>
+</html>
