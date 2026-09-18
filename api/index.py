@@ -17,6 +17,8 @@ from openpyxl.utils import get_column_letter
 
 app = Flask(__name__)
 CORS(app)
+application = app
+
 
 # Kök dizini dinamik olarak tespit et (Vercel ve Lokal uyumlu)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
