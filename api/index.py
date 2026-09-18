@@ -4,7 +4,7 @@ import json
 import base64
 import time
 from collections import defaultdict
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from concurrent.futures import ThreadPoolExecutor
 import google.generativeai as genai
@@ -17,6 +17,22 @@ from openpyxl.utils import get_column_letter
 
 app = Flask(__name__)
 CORS(app)
+
+# Kök dizini dinamik olarak tespit et (Vercel ve Lokal uyumlu)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+@app.route('/')
+def home():
+    """Ana sayfayı (index.html) tarayıcıya sunar."""
+    return send_from_directory(BASE_DIR, 'index.html')
+
+@app.route('/<path:filename>')
+def serve_static_files(filename):
+    """CSS, JS, ikon ve görsel dosyalarını sunar."""
+    target = os.path.join(BASE_DIR, filename)
+    if os.path.exists(target) and os.path.isfile(target):
+        return send_from_directory(BASE_DIR, filename)
+    return send_from_directory(BASE_DIR, 'index.html')
 
 # Vercel ve Güvenlik için İstek Boyutu Sınırı (5 MB)
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
@@ -365,6 +381,3 @@ def convert():
             "status": "error", 
             "message": f"Sistemde beklenmeyen bir hata oluştu: {str(e)}"
         }), 500
-
-def handler(request, context):
-    return app(request, context)
