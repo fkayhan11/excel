@@ -1,0 +1,43 @@
+Telif Hakkı (c) 2026 Furkan. Tüm Hakları Saklıdır.
+Copyright (c) 2026 Furkan. All rights reserved.
+
+==============================================================================
+ÖZEL YAZILIM LİSANS SÖZLEŞMESİ (PROPRIETARY SOURCE-AVAILABLE LICENSE)
+==============================================================================
+
+Bu yazılım ve ilgili tüm kaynak kodları, belgeleri, kullanıcı arayüzü tasarımları 
+ve mimarisi ("Yazılım"), telif hakkı yasaları ve uluslararası telif hakkı 
+anlaşmaları ile korunmaktadır.
+
+Aşağıdaki koşullar ve kısıtlamalar açıkça kabul edilmiş sayılır:
+
+1. KULLANIM VE KOPYALAMA YASAĞI (NO REPRODUCTION / NO COPYING):
+   Bu kaynak kodunun, yazılımın veya herhangi bir parçasının (kod blokları, 
+   algoritmalar, tasarım öğeleri dahil) yazılı izin olmaksızın kısmen ya da 
+   tamamen kopyalanması, çoğaltılması, kopyalanıp başka projelerde kullanılması 
+   KESİNLİKLE YASAKTIR.
+
+2. TİCARİ VE TİCARİ OLMAYAN KULLANIM YASAĞI (NO COMMERCIAL/NON-COMMERCIAL USE):
+   Yazılımın doğrudan veya türetilerek herhangi bir ticari faaliyette, 
+   ücretli veya ücretsiz servislerde, SaaS platformlarında veya üçüncü 
+   şahıslara sunulan ürünlerde kullanılması yasaktır.
+
+3. DEĞİŞTİRME VE TÜRETME YASAĞI (NO DERIVATIVE WORKS):
+   Kaynak kodları üzerinde değişiklik yapılması, çatallanarak (fork) yeni bir 
+   ürün haline getirilmesi, tersine mühendislik uygulanması veya kaynak koda 
+   dönüştürülmesi yasaktır.
+
+4. DAĞITIM YASAĞI (NO REDISTRIBUTION):
+   Bu kaynak kodunun herhangi bir mecrada (web siteleri, forumlar, açık veya 
+   kapalı kod depoları, paket yöneticileri) üçüncü taraflara dağıtılması, 
+   alt lisanslanması (sublicense) veya yeniden yayınlanması yasaktır.
+
+5. GITHUB GÖRÜNTÜLEME HAKKI:
+   Bu kodun GitHub üzerinde barındırılması, yalnızca GitHub Hizmet Şartları 
+   kapsamında kodun web arayüzünde incelenmesi amacına yöneliktir. Kodun indirilip 
+   izinsiz çalıştırılması, kopyalanması veya kendi adına yayınlanması hakkını vermez.
+
+Yazılımın herhangi bir şekilde izinsiz kullanımı, telif hakkı ihlali 
+kapsamında yasal ve cezai takibata tabidir.
+
+İletişim ve yazılı izin talepleri için proje sahibi ile irtibata geçilmelidir.
