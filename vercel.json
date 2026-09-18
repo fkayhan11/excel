@@ -11,7 +11,7 @@
     },
     {
       "source": "/(.*)",
-      "destination": "/api/index.py"
+      "destination": "/index.html"
     }
   ]
 }

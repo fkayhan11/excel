@@ -113,6 +113,7 @@ def check_rate_limit(ip, count=1):
     return True, remaining
 
 @app.route('/api/quota', methods=['GET'])
+@app.route('/quota', methods=['GET'])
 def quota_status():
     """Ön yüzün anlık kota durumunu sorgulaması için endpoint."""
     ip = get_client_ip()
@@ -168,6 +169,7 @@ def generate_table_json(img_data, prompt):
     raise Exception("Yapay zeka modellerine erişilemedi.")
 
 @app.route('/api/convert', methods=['POST'])
+@app.route('/convert', methods=['POST'])
 def convert():
     if not api_key:
         return jsonify({
