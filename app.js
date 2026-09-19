@@ -44,7 +44,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnModalClose = document.getElementById('btn-modal-close');
     const themeToggleBtn = document.getElementById('theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
-    const multiPreviewContainer = document.getElementById('multi-preview-container');
+    
+    // Çoklu Sayfa ve Mod Seçici Elemanları
+    const modeSingleBtn = document.getElementById('mode-single');
+    const modeMultiBtn = document.getElementById('mode-multi');
+    const btnLoadSample = document.getElementById('btn-load-sample');
+    const multiSlotsContainer = document.getElementById('multi-slots-container');
+    const multiSlotsGrid = document.getElementById('multi-slots-grid');
+    const multiSlotsCount = document.getElementById('multi-slots-count');
+    const btnAddMorePages = document.getElementById('btn-add-more-pages');
+    const btnClearAllPages = document.getElementById('btn-clear-all-pages');
+    const multiBadge = document.getElementById('multi-badge');
 
     // İlerleme metni için DOM elemanı oluştur
     const progressTextNode = document.createElement('div');
@@ -52,7 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
     progressTextNode.style.display = 'none';
     btnSubmit.parentNode.insertBefore(progressTextNode, btnSubmit.nextSibling);
 
+    let currentMode = 'single'; // 'single' veya 'multi'
     let selectedImages = []; // Çoklu sayfa/görsel listesi: [{ name, base64 }]
+    let activeSlotTarget = null; // Tıklanan slotun indeksi (değiştirme veya tekil yükleme için)
     let isCooldownActive = false;
     let modalCountdownTimer = null;
 
@@ -283,25 +295,181 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === limitModal) closeLimitModal();
     });
 
+    // ==========================================
+    // 3. Mod Yönetimi ve Çoklu Sayfa Fonksiyonları
+    // ==========================================
+    function switchMode(mode) {
+        currentMode = mode;
+        if (mode === 'multi') {
+            if (modeSingleBtn) {
+                modeSingleBtn.classList.remove('active');
+                modeSingleBtn.setAttribute('aria-selected', 'false');
+            }
+            if (modeMultiBtn) {
+                modeMultiBtn.classList.add('active');
+                modeMultiBtn.setAttribute('aria-selected', 'true');
+            }
+            dropZone.style.display = 'none';
+            if (multiSlotsContainer) multiSlotsContainer.style.display = 'flex';
+            renderMultiSlots();
+        } else {
+            if (modeMultiBtn) {
+                modeMultiBtn.classList.remove('active');
+                modeMultiBtn.setAttribute('aria-selected', 'false');
+            }
+            if (modeSingleBtn) {
+                modeSingleBtn.classList.add('active');
+                modeSingleBtn.setAttribute('aria-selected', 'true');
+            }
+            if (multiSlotsContainer) multiSlotsContainer.style.display = 'none';
+            dropZone.style.display = 'flex';
+            renderSingleImage();
+        }
+    }
+
+    if (modeSingleBtn) {
+        modeSingleBtn.addEventListener('click', () => switchMode('single'));
+    }
+    if (modeMultiBtn) {
+        modeMultiBtn.addEventListener('click', () => switchMode('multi'));
+    }
+
     function clearSelectedImage(e) {
         if (e) e.stopPropagation();
         selectedImages = [];
+        activeSlotTarget = null;
         fileInput.value = '';
         previewImg.src = '';
         previewImg.style.display = 'none';
-        if (multiPreviewContainer) {
-            multiPreviewContainer.innerHTML = '';
-            multiPreviewContainer.style.display = 'none';
-        }
         dropIcon.style.display = 'block';
         dropText.innerHTML = 'Tablo Görselini Sürükle, Seç veya <b>Yapıştır (Ctrl+V)</b>';
         if (btnClearImage) btnClearImage.style.display = 'none';
         resultBox.style.display = 'none';
         excelTargetInput.value = '';
+        if (multiBadge) multiBadge.textContent = '2-4 Sayfa';
+        btnText.innerHTML = 'Görseli Excel\'e Dönüştür <i class="fa-solid fa-wand-magic-sparkles"></i>';
+        renderMultiSlots();
     }
 
     if (btnClearImage) {
         btnClearImage.addEventListener('click', clearSelectedImage);
+    }
+    if (btnClearAllPages) {
+        btnClearAllPages.addEventListener('click', clearSelectedImage);
+    }
+    if (btnAddMorePages) {
+        btnAddMorePages.addEventListener('click', () => {
+            if (selectedImages.length >= 4) {
+                showResult('Tek seferde en fazla 4 sayfa ekleyebilirsiniz.', 'error');
+                return;
+            }
+            activeSlotTarget = selectedImages.length;
+            fileInput.click();
+        });
+    }
+
+    function renderSingleImage() {
+        if (selectedImages.length === 0) {
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+            dropIcon.style.display = 'block';
+            dropText.innerHTML = 'Tablo Görselini Sürükle, Seç veya <b>Yapıştır (Ctrl+V)</b>';
+            if (btnClearImage) btnClearImage.style.display = 'none';
+        } else {
+            previewImg.src = selectedImages[0].base64;
+            previewImg.style.display = 'block';
+            dropIcon.style.display = 'none';
+            dropText.textContent = `Seçilen Dosya: ${selectedImages[0].name}`;
+            if (btnClearImage) btnClearImage.style.display = 'inline-flex';
+        }
+        btnText.innerHTML = 'Görseli Excel\'e Dönüştür <i class="fa-solid fa-wand-magic-sparkles"></i>';
+    }
+
+    function renderMultiSlots() {
+        if (!multiSlotsGrid) return;
+        multiSlotsGrid.innerHTML = '';
+
+        for (let i = 0; i < 4; i++) {
+            if (i < selectedImages.length) {
+                const item = selectedImages[i];
+                const card = document.createElement('div');
+                card.className = 'slot-card filled';
+                card.setAttribute('data-slot-index', i);
+                card.innerHTML = `
+                    <div class="slot-thumb-wrap">
+                        <img src="${item.base64}" alt="Sayfa ${i + 1}" />
+                        <span class="slot-badge">Sayfa ${i + 1}</span>
+                        <button type="button" class="slot-remove-btn" title="Bu sayfayı kaldır" data-slot-index="${i}">&times;</button>
+                    </div>
+                    <div class="slot-meta">
+                        <span class="slot-filename" title="${item.name}">${item.name}</span>
+                        <div class="slot-actions">
+                            <button type="button" class="btn-slot-replace" title="Farklı görsel seç" data-slot-index="${i}">
+                                <i class="fa-solid fa-arrows-rotate"></i> Değiştir
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                card.querySelector('.slot-remove-btn').addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    selectedImages.splice(i, 1);
+                    renderSelectedImages();
+                });
+
+                card.querySelector('.btn-slot-replace').addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    activeSlotTarget = i;
+                    fileInput.click();
+                });
+
+                multiSlotsGrid.appendChild(card);
+            } else {
+                const emptyCard = document.createElement('div');
+                emptyCard.className = 'slot-card empty';
+                emptyCard.setAttribute('data-slot-index', i);
+                emptyCard.innerHTML = `
+                    <i class="fa-solid fa-cloud-arrow-up slot-empty-icon"></i>
+                    <div class="slot-empty-title">+ ${i + 1}. Sayfayı Ekle</div>
+                    <div class="slot-empty-sub">${i < 2 ? 'Gerekli Sayfa' : 'İsteğe Bağlı'}</div>
+                `;
+
+                emptyCard.addEventListener('click', () => {
+                    activeSlotTarget = i;
+                    fileInput.click();
+                });
+
+                emptyCard.addEventListener('dragover', (ev) => {
+                    ev.preventDefault();
+                    emptyCard.classList.add('dragover');
+                });
+                emptyCard.addEventListener('dragleave', () => {
+                    emptyCard.classList.remove('dragover');
+                });
+                emptyCard.addEventListener('drop', (ev) => {
+                    ev.preventDefault();
+                    emptyCard.classList.remove('dragover');
+                    if (ev.dataTransfer.files && ev.dataTransfer.files.length > 0) {
+                        handleFiles(ev.dataTransfer.files, i);
+                    }
+                });
+
+                multiSlotsGrid.appendChild(emptyCard);
+            }
+        }
+
+        if (multiSlotsCount) {
+            multiSlotsCount.innerHTML = `<i class="fa-solid fa-layer-group"></i> <strong>${selectedImages.length}</strong> / 4 Sayfa Eklendi`;
+        }
+        if (multiBadge) {
+            multiBadge.textContent = selectedImages.length > 0 ? `${selectedImages.length}/4 Sayfa` : '2-4 Sayfa';
+        }
+
+        if (selectedImages.length > 1) {
+            btnText.innerHTML = `${selectedImages.length} Sayfayı Tek Excel Yap <i class="fa-solid fa-wand-magic-sparkles"></i>`;
+        } else {
+            btnText.innerHTML = 'Görselleri Excel\'e Dönüştür <i class="fa-solid fa-wand-magic-sparkles"></i>';
+        }
     }
 
     function renderSelectedImages() {
@@ -310,48 +478,139 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (btnClearImage) btnClearImage.style.display = 'inline-flex';
-        dropIcon.style.display = 'none';
-        resultBox.style.display = 'none';
-
-        if (selectedImages.length === 1) {
-            previewImg.src = selectedImages[0].base64;
-            previewImg.style.display = 'block';
-            if (multiPreviewContainer) {
-                multiPreviewContainer.innerHTML = '';
-                multiPreviewContainer.style.display = 'none';
-            }
-            dropText.textContent = `Seçilen Dosya: ${selectedImages[0].name}`;
+        if (currentMode === 'multi') {
+            renderMultiSlots();
         } else {
-            previewImg.style.display = 'none';
-            if (multiPreviewContainer) {
-                multiPreviewContainer.style.display = 'flex';
-                multiPreviewContainer.innerHTML = '';
-                selectedImages.forEach((item, idx) => {
-                    const card = document.createElement('div');
-                    card.className = 'multi-thumb-card';
-                    card.innerHTML = `
-                        <img src="${item.base64}" alt="Sayfa ${idx + 1}" />
-                        <span class="multi-thumb-badge">Sayfa ${idx + 1}</span>
-                        <button type="button" class="multi-thumb-remove" title="Bu sayfayı kaldır" data-idx="${idx}">&times;</button>
-                    `;
-                    card.querySelector('.multi-thumb-remove').addEventListener('click', (ev) => {
-                        ev.stopPropagation();
-                        selectedImages.splice(idx, 1);
-                        renderSelectedImages();
-                    });
-                    multiPreviewContainer.appendChild(card);
+            renderSingleImage();
+        }
+    }
+
+    // 1-Tıkla Örnek Çoklu Tablo Oluşturucu (Test İçin)
+    function generateSampleTableImages() {
+        function createTableCanvas(title, headerColor, headers, rows, totalRow) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 340;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+            // Üst Başlık Şeridi
+            ctx.fillStyle = headerColor;
+            ctx.fillRect(10, 10, canvas.width - 20, 48);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 16px Inter, sans-serif';
+            ctx.fillText(title, 25, 40);
+
+            const startX = 25;
+            const startY = 75;
+            const colWidth = (canvas.width - 50) / headers.length;
+            const rowHeight = 36;
+
+            // Başlık Satırı
+            ctx.fillStyle = '#f1f5f9';
+            ctx.fillRect(startX, startY, canvas.width - 50, rowHeight);
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 13px Inter, sans-serif';
+            headers.forEach((h, idx) => {
+                ctx.fillText(h, startX + idx * colWidth + 8, startY + 23);
+            });
+
+            // Veri Satırları
+            rows.forEach((r, rIdx) => {
+                const y = startY + (rIdx + 1) * rowHeight;
+                ctx.fillStyle = (rIdx % 2 === 0) ? '#ffffff' : '#f8fafc';
+                ctx.fillRect(startX, y, canvas.width - 50, rowHeight);
+                ctx.fillStyle = '#334155';
+                ctx.font = '12px Inter, sans-serif';
+                r.forEach((cell, cIdx) => {
+                    ctx.fillText(cell, startX + cIdx * colWidth + 8, y + 23);
+                });
+
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(startX, y + rowHeight);
+                ctx.lineTo(canvas.width - 25, y + rowHeight);
+                ctx.stroke();
+            });
+
+            // Toplam Satırı
+            if (totalRow) {
+                const totalY = startY + (rows.length + 1) * rowHeight;
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fillRect(startX, totalY, canvas.width - 50, rowHeight);
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 13px Inter, sans-serif';
+                totalRow.forEach((cell, cIdx) => {
+                    ctx.fillText(cell, startX + cIdx * colWidth + 8, totalY + 23);
                 });
             }
-            dropText.textContent = `${selectedImages.length} Sayfa Seçildi (Tek Excel'de birleştirilecek)`;
+
+            return canvas.toDataURL('image/jpeg', 0.90);
         }
+
+        const img1 = createTableCanvas(
+            "Ocak 2024 Satış ve Ciro Tablosu",
+            "#1e40af",
+            ["Ürün Kodu", "Ürün Adı", "Kategori", "Adet", "Birim Fiyat", "Ciro (TL)"],
+            [
+                ["P-101", "Laptop Pro 15", "Bilgisayar", "12", "28.500", "342.000"],
+                ["P-102", "Kablosuz Mouse", "Aksesuar", "85", "450", "38.250"],
+                ["P-103", "27\" 4K Monitör", "Ekran", "18", "9.200", "165.600"],
+                ["P-104", "Mekanik Klavye", "Donanım", "42", "1.850", "77.700"]
+            ],
+            ["TOPLAM", "4 Kalem", "-", "157", "-", "623.550 TL"]
+        );
+
+        const img2 = createTableCanvas(
+            "Şubat 2024 Bölgesel Performans Tablosu",
+            "#047857",
+            ["Bölge", "Temsilci", "Hedef (TL)", "Satış (TL)", "Kalan (TL)", "Başarı %"],
+            [
+                ["Marmara", "Ahmet Yılmaz", "400.000", "485.000", "+85.000", "%121"],
+                ["Ege", "Zeynep Kaya", "300.000", "315.000", "+15.000", "%105"],
+                ["İç Anadolu", "Mehmet Demir", "250.000", "240.000", "-10.000", "%96"],
+                ["Akdeniz", "Elif Çelik", "200.000", "230.000", "+30.000", "%115"]
+            ],
+            ["GENEL TOPLAM", "4 Bölge", "1.150.000", "1.270.000", "+120.000", "%110"]
+        );
+
+        return [
+            { name: "Ocak_2024_Satis_Tablosu.jpg", base64: img1 },
+            { name: "Subat_2024_Performans_Tablosu.jpg", base64: img2 }
+        ];
+    }
+
+    if (btnLoadSample) {
+        btnLoadSample.addEventListener('click', () => {
+            const samples = generateSampleTableImages();
+            selectedImages = samples;
+            excelTargetInput.value = "Sirket_2024_Cift_Sayfa_Raporu";
+            switchMode('multi');
+            renderSelectedImages();
+            
+            showResult(`
+                <strong><i class="fa-solid fa-bolt"></i> 2 Adet Örnek Tablo Sayfası Yüklendi!</strong><br>
+                1. Sayfa: <em>Ocak 2024 Satış ve Ciro Tablosu</em><br>
+                2. Sayfa: <em>Şubat 2024 Bölgesel Performans Tablosu</em><br>
+                Şimdi <strong>'2 Sayfayı Tek Excel Yap'</strong> butonuna tıklayarak her iki sayfanın tek Excel kitabında nasıl birleştiğini görebilirsiniz.
+            `, 'info');
+        });
     }
 
     // ==========================================
     // 4. Olay Dinleyicileri (Sürükle, Tıkla, YAPıŞTıR)
     // ==========================================
     dropZone.addEventListener('click', (e) => {
-        if (e.target.closest('#btn-clear-image') || e.target.closest('.multi-thumb-remove')) return;
+        if (e.target.closest('#btn-clear-image')) return;
+        activeSlotTarget = null;
         fileInput.click();
     });
 
@@ -439,7 +698,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function handleFiles(fileList) {
+    async function handleFiles(fileList, targetSlot = null) {
+        fileInput.value = '';
         const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
         const incoming = Array.from(fileList).filter(f => validTypes.includes(f.type));
 
@@ -447,6 +707,42 @@ document.addEventListener('DOMContentLoaded', () => {
             triggerErrorShake();
             showResult('Hata: Sadece PNG veya JPG formatında görseller yükleyebilirsiniz.', 'error');
             return;
+        }
+
+        const slotToUse = targetSlot !== null ? targetSlot : activeSlotTarget;
+        activeSlotTarget = null;
+
+        // Belirli bir slota yerleştirme/değiştirme:
+        if (slotToUse !== null && slotToUse < 4) {
+            try {
+                const base64 = await compressImageFile(incoming[0]);
+                if (slotToUse < selectedImages.length) {
+                    selectedImages[slotToUse] = {
+                        name: incoming[0].name,
+                        base64: base64
+                    };
+                } else {
+                    selectedImages.push({
+                        name: incoming[0].name,
+                        base64: base64
+                    });
+                }
+            } catch (err) {
+                console.error("Görsel sıkıştırma hatası:", err);
+            }
+
+            if (selectedImages.length > 0 && !excelTargetInput.value.trim()) {
+                const firstClean = selectedImages[0].name.replace(/\.[^/.]+$/, "");
+                excelTargetInput.value = firstClean;
+            }
+
+            renderSelectedImages();
+            return;
+        }
+
+        // Eğer tek sayfa modundayken birden fazla dosya seçildiyse otomatik çoklu moda geç:
+        if (incoming.length > 1 && currentMode === 'single') {
+            switchMode('multi');
         }
 
         if (selectedImages.length + incoming.length > 4) {
@@ -624,35 +920,56 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
 
-                // 2. Web Üzerinde Tablo Önizleme Akordiyonu
+                // 2. Web Üzerinde Tablo Önizleme Akordiyonu (Çoklu Sayfa Sekmeleri ile)
                 let tablePreviewHtml = '';
                 const tablesToRender = Array.isArray(data.all_tables) && data.all_tables.length > 0 ? data.all_tables : (data.table_data ? [data.table_data] : []);
                 if (tablesToRender.length > 0) {
                     const totalRows = tablesToRender.reduce((sum, t) => sum + (Array.isArray(t) ? t.length : 0), 0);
+                    
+                    let sheetTabsHtml = '';
+                    let sheetPanesHtml = '';
+
+                    if (tablesToRender.length > 1) {
+                        sheetTabsHtml = `
+                            <div class="preview-sheet-tabs">
+                                ${tablesToRender.map((tbl, tIdx) => `
+                                    <button type="button" class="sheet-tab-btn ${tIdx === 0 ? 'active' : ''}" data-target-pane="sheet-pane-${tIdx}">
+                                        <i class="fa-solid fa-file-excel"></i> Sayfa ${tIdx + 1} (${tbl.length} Satır)
+                                    </button>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+
+                    sheetPanesHtml = tablesToRender.map((tbl, tIdx) => `
+                        <div class="sheet-tab-pane ${tIdx === 0 ? 'active' : ''}" id="sheet-pane-${tIdx}">
+                            ${tablesToRender.length > 1 ? `<div class="preview-sheet-header" style="font-weight:700; font-size:13px; margin: 8px 0; color: var(--app-primary);"><i class="fa-solid fa-table"></i> Sayfa ${tIdx + 1} İçeriği (${tbl.length} Satır)</div>` : ''}
+                            <table class="web-preview-table" style="margin-bottom: 16px;">
+                                <tbody>
+                                    ${tbl.map((row, rIdx) => `
+                                        <tr>
+                                            ${row.map(cell => {
+                                                const tag = rIdx === 0 ? 'th' : 'td';
+                                                const isBold = cell.bold ? 'font-weight:700;' : '';
+                                                const bg = cell.bg_color && cell.bg_color !== '#FFFFFF' ? `background-color:${cell.bg_color};` : '';
+                                                return `<${tag} style="${isBold}${bg}">${cell.value !== undefined && cell.value !== null ? cell.value : ''}</${tag}>`;
+                                            }).join('')}
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `).join('');
+
                     tablePreviewHtml = `
-                        <details class="table-preview-details">
+                        <details class="table-preview-details" open>
                             <summary>
                                 <i class="fa-solid fa-table-cells"></i> 
                                 Tablo Önizlemesini Gör (${tablesToRender.length > 1 ? tablesToRender.length + ' Sayfa, Toplam ' + totalRows + ' Satır' : totalRows + ' Satır'})
                             </summary>
                             <div class="preview-table-container">
-                                ${tablesToRender.map((tbl, tIdx) => `
-                                    ${tablesToRender.length > 1 ? `<div class="preview-sheet-header" style="font-weight:700; font-size:13px; margin: 12px 0 6px; color: var(--primary-color);"><i class="fa-solid fa-file-lines"></i> Sayfa ${tIdx + 1} (${tbl.length} Satır)</div>` : ''}
-                                    <table class="web-preview-table" style="margin-bottom: 16px;">
-                                        <tbody>
-                                            ${tbl.map((row, rIdx) => `
-                                                <tr>
-                                                    ${row.map(cell => {
-                                                        const tag = rIdx === 0 ? 'th' : 'td';
-                                                        const isBold = cell.bold ? 'font-weight:700;' : '';
-                                                        const bg = cell.bg_color && cell.bg_color !== '#FFFFFF' ? `background-color:${cell.bg_color};` : '';
-                                                        return `<${tag} style="${isBold}${bg}">${cell.value !== undefined && cell.value !== null ? cell.value : ''}</${tag}>`;
-                                                    }).join('')}
-                                                </tr>
-                                            `).join('')}
-                                        </tbody>
-                                    </table>
-                                `).join('')}
+                                ${sheetTabsHtml}
+                                ${sheetPanesHtml}
                             </div>
                         </details>
                     `;
@@ -665,6 +982,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${tablePreviewHtml}
                 `;
                 showResult(successMessage, 'success');
+
+                // Çoklu Sayfa Önizleme Sekme Değiştirici Dinleyicileri
+                document.querySelectorAll('.sheet-tab-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.sheet-tab-btn').forEach(b => b.classList.remove('active'));
+                        document.querySelectorAll('.sheet-tab-pane').forEach(p => p.classList.remove('active'));
+                        btn.classList.add('active');
+                        const targetId = btn.getAttribute('data-target-pane');
+                        const targetPane = document.getElementById(targetId);
+                        if (targetPane) targetPane.classList.add('active');
+                    });
+                });
 
                 // CSV İndirme Butonu Dinleyicisi
                 const btnCsv = document.getElementById('btn-csv-download');

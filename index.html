@@ -76,25 +76,60 @@
                 <div class="workspace-grid">
                     <!-- Sol Kolon: Geniş Görsel Yükleme Alanı ve Çoklu Önizleme -->
                     <div class="workspace-col workspace-left">
+                        <!-- Yükleme Modu ve Test Araç Çubuğu -->
+                        <div class="upload-mode-bar">
+                            <div class="mode-tabs" role="tablist">
+                                <button type="button" class="mode-tab active" id="mode-single" data-mode="single" role="tab" aria-selected="true">
+                                    <i class="fa-solid fa-file-image"></i> Tek Sayfa
+                                </button>
+                                <button type="button" class="mode-tab" id="mode-multi" data-mode="multi" role="tab" aria-selected="false">
+                                    <i class="fa-solid fa-layer-group"></i> Çoklu Sayfa <span class="mode-badge" id="multi-badge">2-4 Sayfa</span>
+                                </button>
+                            </div>
+                            <button type="button" class="btn-sample-load" id="btn-load-sample" title="Çoklu sayfa birleştirmeyi hemen denemek için 2 örnek tablo sayfası oluşturup yükler">
+                                <i class="fa-solid fa-bolt"></i> 2 Sayfa Test Et (Örnek)
+                            </button>
+                        </div>
+
+                        <!-- Tek Sayfa Modu İçin Klasik Dropzone -->
                         <div class="drop-zone" id="drop-zone" aria-label="Görsel Yükleme Alanı">
-                            <button type="button" class="btn-clear-image" id="btn-clear-image" title="Seçilen Görselleri Kaldır">
+                            <button type="button" class="btn-clear-image" id="btn-clear-image" title="Seçilen Görseli Kaldır">
                                 <i class="fa-solid fa-xmark"></i> Temizle
                             </button>
                             
                             <i class="fa-solid fa-cloud-arrow-up" id="drop-icon"></i>
                             
                             <div class="drop-zone-text" id="drop-text">Tablo Görselini Sürükle, Seç veya <b>Yapıştır (Ctrl+V)</b></div>
-                            <div class="drop-zone-hint">Desteklenen Formatlar: PNG, JPG, JPEG (Tek seferde 1-4 sayfa birleştirilebilir)</div>
+                            <div class="drop-zone-hint">Desteklenen Formatlar: PNG, JPG, JPEG (Tek tablo sayfası)</div>
                             
                             <!-- Tekil Görsel Seçildiğinde Gösterilecek Önizleme Alanı -->
                             <img alt="Yüklenen Tablo Önizlemesi" id="preview-img" src=""/>
-
-                            <!-- Çoklu Görsel Yüklendiğinde Gösterilecek Önizleme Alanı -->
-                            <div class="multi-preview-container" id="multi-preview-container"></div>
-                            
-                            <!-- Arka planda çalışan gerçek dosya seçici input (Çoklu Dosya Destekli) -->
-                            <input accept="image/png, image/jpeg, image/jpg" id="file-input" type="file" multiple title="Görselleri Seç"/>
                         </div>
+
+                        <!-- Çoklu Sayfa Modu İçin Özel Sayfa Slotları Izgarası -->
+                        <div class="multi-slots-container" id="multi-slots-container" style="display: none;">
+                            <div class="multi-slots-header">
+                                <div class="multi-slots-info">
+                                    <span class="multi-slots-count" id="multi-slots-count"><i class="fa-solid fa-layer-group"></i> <strong>0</strong> / 4 Sayfa Eklendi</span>
+                                    <span class="multi-slots-hint">Her görsel Excel dosyasında ayrı bir sekme (Sayfa 1, Sayfa 2...) olur.</span>
+                                </div>
+                                <div class="multi-slots-actions">
+                                    <button type="button" class="btn-slot-action" id="btn-add-more-pages" title="Listeye yeni sayfa ekle">
+                                        <i class="fa-solid fa-plus"></i> Sayfa Ekle
+                                    </button>
+                                    <button type="button" class="btn-slot-action btn-slot-clear" id="btn-clear-all-pages" title="Tüm sayfaları temizle">
+                                        <i class="fa-solid fa-trash-can"></i> Temizle
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="multi-slots-grid" id="multi-slots-grid">
+                                <!-- JS dinamik olarak 4 interaktif slot kartı render eder -->
+                            </div>
+                        </div>
+
+                        <!-- Arka planda çalışan gerçek dosya seçici input (Çoklu Dosya Destekli) -->
+                        <input accept="image/png, image/jpeg, image/jpg" id="file-input" type="file" multiple title="Görselleri Seç"/>
                     </div>
 
                     <!-- Sağ Kolon: Ayarlar, Sayaç ve Eylem Butonları -->

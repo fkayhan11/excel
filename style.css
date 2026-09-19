@@ -837,10 +837,375 @@ body {
     cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: background 0.15s;
+/* --- 7. ÇOKLU SAYFA YÖNETİMİ VE MOD SEÇİCİ STİLLERİ --- */
+.upload-mode-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.85rem;
+    flex-wrap: wrap;
 }
-.multi-thumb-remove:hover { background: #dc2626; }
+
+.mode-tabs {
+    display: inline-flex;
+    background: #f1f5f9;
+    padding: 0.25rem;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    gap: 0.25rem;
+}
+
+.mode-tab {
+    background: transparent;
+    border: none;
+    padding: 0.45rem 0.85rem;
+    border-radius: 7px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+}
+
+.mode-tab:hover {
+    color: #1e293b;
+}
+
+.mode-tab.active {
+    background: #ffffff;
+    color: #2563eb;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.mode-badge {
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.mode-tab.active .mode-badge {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.btn-sample-load {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+    padding: 0.45rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(37,99,235,0.08);
+}
+
+.btn-sample-load:hover {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    color: #1e40af;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(37,99,235,0.15);
+}
+
+.btn-sample-load i {
+    color: #f59e0b;
+}
+
+/* Çoklu Sayfa Slot Izgarası Konteyneri */
+.multi-slots-container {
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    border-radius: 14px;
+    padding: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    min-height: 350px;
+    transition: all 0.25s ease;
+}
+
+.multi-slots-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.multi-slots-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.multi-slots-count {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #1e293b;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.multi-slots-count strong {
+    color: #2563eb;
+    font-size: 1rem;
+}
+
+.multi-slots-hint {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.multi-slots-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.btn-slot-action {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s ease;
+}
+
+.btn-slot-action:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+.btn-slot-clear:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #b91c1c;
+}
+
+.multi-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.85rem;
+    flex: 1;
+}
+
+.slot-card {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 130px;
+    transition: all 0.2s ease;
+}
+
+.slot-card.empty {
+    border: 2px dashed #cbd5e1;
+    background: #ffffff;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 1rem 0.5rem;
+    cursor: pointer;
+}
+
+.slot-card.empty:hover, .slot-card.empty.dragover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+    transform: translateY(-2px);
+}
+
+.slot-empty-icon {
+    font-size: 1.4rem;
+    color: #94a3b8;
+    margin-bottom: 0.35rem;
+    transition: color 0.2s;
+}
+
+.slot-card.empty:hover .slot-empty-icon {
+    color: #2563eb;
+}
+
+.slot-empty-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.slot-empty-sub {
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-top: 0.15rem;
+}
+
+.slot-card.filled {
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.slot-card.filled:hover {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.slot-thumb-wrap {
+    position: relative;
+    width: 100%;
+    height: 85px;
+    background: #f1f5f9;
+    overflow: hidden;
+}
+
+.slot-thumb-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.slot-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: rgba(15, 23, 42, 0.88);
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.2px;
+}
+
+.slot-remove-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: #ef4444;
+    color: #ffffff;
+    border: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.15s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.slot-remove-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+.slot-meta {
+    padding: 0.5rem 0.65rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    border-top: 1px solid #f1f5f9;
+}
+
+.slot-filename {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 130px;
+}
+
+.slot-actions {
+    display: inline-flex;
+    gap: 0.25rem;
+}
+
+.btn-slot-replace {
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 0.72rem;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.btn-slot-replace:hover {
+    color: #2563eb;
+    background: #eff6ff;
+}
+
+/* Çoklu Sayfa Sonuç Önizleme Sekmeleri (Excel Sheet Tabs) */
+.preview-sheet-tabs {
+    display: flex;
+    gap: 0.4rem;
+    margin: 12px 0 14px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 2px;
+    overflow-x: auto;
+}
+
+.sheet-tab-btn {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.sheet-tab-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.sheet-tab-btn.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+}
+
+.sheet-tab-pane {
+    display: none;
+    animation: fadeIn 0.2s ease;
+}
+
+.sheet-tab-pane.active {
+    display: block;
+}
 
 /* --- 7.5 KARANLIK TEMA DETAYLI BİLEŞEN AYARLARI --- */
 [data-theme="dark"] .shield-badge {
@@ -946,9 +1311,93 @@ body {
     color: #f8fafc;
     border-color: #334155;
 }
-[data-theme="dark"] .web-preview-table td {
+[data-theme="dark"] .mode-tabs {
+    background: #111827;
+    border-color: #1f2937;
+}
+[data-theme="dark"] .mode-tab {
+    color: #94a3b8;
+}
+[data-theme="dark"] .mode-tab:hover {
+    color: #f8fafc;
+}
+[data-theme="dark"] .mode-tab.active {
+    background: #1e293b;
+    color: #60a5fa;
+}
+[data-theme="dark"] .btn-sample-load {
+    background: linear-gradient(135deg, #1e3a5f 0%, #172554 100%);
+    border-color: #1d4ed8;
+    color: #93c5fd;
+}
+[data-theme="dark"] .btn-sample-load:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    color: #ffffff;
+}
+
+[data-theme="dark"] .multi-slots-container {
+    background: #111827;
+    border-color: #374151;
+}
+[data-theme="dark"] .multi-slots-header {
+    border-bottom-color: #1f2937;
+}
+[data-theme="dark"] .multi-slots-count {
+    color: #f1f5f9;
+}
+[data-theme="dark"] .multi-slots-hint {
+    color: #94a3b8;
+}
+[data-theme="dark"] .btn-slot-action {
+    background: #1e293b;
     border-color: #334155;
-    color: #e2e8f0;
+    color: #cbd5e1;
+}
+[data-theme="dark"] .btn-slot-action:hover {
+    background: #334155;
+    color: #f8fafc;
+}
+[data-theme="dark"] .slot-card.empty {
+    background: #0f172a;
+    border-color: #334155;
+}
+[data-theme="dark"] .slot-card.empty:hover {
+    background: #1e293b;
+    border-color: #3b82f6;
+}
+[data-theme="dark"] .slot-empty-title {
+    color: #cbd5e1;
+}
+[data-theme="dark"] .slot-empty-sub {
+    color: #64748b;
+}
+[data-theme="dark"] .slot-card.filled {
+    background: #1e293b;
+    border-color: #334155;
+}
+[data-theme="dark"] .slot-meta {
+    background: #1e293b;
+    border-top-color: #334155;
+}
+[data-theme="dark"] .slot-filename {
+    color: #f1f5f9;
+}
+[data-theme="dark"] .preview-sheet-tabs {
+    border-bottom-color: #334155;
+}
+[data-theme="dark"] .sheet-tab-btn {
+    background: #1e293b;
+    border-color: #334155;
+    color: #94a3b8;
+}
+[data-theme="dark"] .sheet-tab-btn:hover {
+    background: #334155;
+    color: #f8fafc;
+}
+[data-theme="dark"] .sheet-tab-btn.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
 }
 
 /* --- 8. MOBİL UYUM (RESPONSIVE) --- */
