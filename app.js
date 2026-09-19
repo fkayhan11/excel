@@ -1255,4 +1255,94 @@ document.addEventListener('DOMContentLoaded', () => {
         void formBox.offsetWidth;
         formBox.classList.add('shake');
     }
+
+    // ==========================================
+    // 9. Özel Tasarım İmleç (Custom Interactive Cursor)
+    // ==========================================
+    function initCustomCursor() {
+        const cursorDot = document.getElementById('custom-cursor-dot');
+        const cursorRing = document.getElementById('custom-cursor-ring');
+        if (!cursorDot || !cursorRing) return;
+
+        // Dokunmatik ekranlı cihazlarda imleci devreye sokma
+        if (window.matchMedia('(pointer: coarse)').matches) return;
+
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let ringX = mouseX;
+        let ringY = mouseY;
+        let isInitialized = false;
+
+        // Mouse hareketlerini dinle (Dot anında takip eder)
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+
+            cursorDot.style.left = `${mouseX}px`;
+            cursorDot.style.top = `${mouseY}px`;
+
+            if (!isInitialized) {
+                isInitialized = true;
+                ringX = mouseX;
+                ringY = mouseY;
+                cursorDot.classList.add('active');
+                cursorRing.classList.add('active');
+            }
+        });
+
+        // Mouse tıklamalarında içe çekilme animasyonu
+        window.addEventListener('mousedown', () => {
+            cursorRing.classList.add('cursor-down');
+            cursorDot.classList.add('cursor-down');
+        });
+
+        window.addEventListener('mouseup', () => {
+            cursorRing.classList.remove('cursor-down');
+            cursorDot.classList.remove('cursor-down');
+        });
+
+        // Tarayıcı penceresinden çıkıldığında gizle, girildiğinde göster
+        document.addEventListener('mouseleave', () => {
+            cursorDot.classList.add('cursor-hidden');
+            cursorRing.classList.add('cursor-hidden');
+        });
+
+        document.addEventListener('mouseenter', () => {
+            cursorDot.classList.remove('cursor-hidden');
+            cursorRing.classList.remove('cursor-hidden');
+        });
+
+        // Tıklanabilir / Etkileşimli eleman hover tespiti (Dinamik sekmeler için delegasyon)
+        const interactiveSelector = 'button, a, input, textarea, select, label, [role="button"], [role="tab"], .drop-zone, .sheet-tab-card, .btn-order-arrow, .count-chip, .mode-seg-btn, .theme-toggle-btn, .btn-add-sheet, .btn-sample-inline, .status-badge, summary';
+
+        document.addEventListener('mouseover', (e) => {
+            if (e.target.closest && e.target.closest(interactiveSelector)) {
+                cursorRing.classList.add('cursor-hover');
+                cursorDot.classList.add('cursor-hover');
+            }
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            if (e.target.closest && e.target.closest(interactiveSelector)) {
+                cursorRing.classList.remove('cursor-hover');
+                cursorDot.classList.remove('cursor-hover');
+            }
+        });
+
+        // Ring için yumuşak interpolasyon döngüsü (Lerp - 60/120fps)
+        function renderCursorRing() {
+            if (isInitialized) {
+                const ease = 0.22;
+                ringX += (mouseX - ringX) * ease;
+                ringY += (mouseY - ringY) * ease;
+                cursorRing.style.left = `${ringX}px`;
+                cursorRing.style.top = `${ringY}px`;
+            }
+            requestAnimationFrame(renderCursorRing);
+        }
+
+        requestAnimationFrame(renderCursorRing);
+    }
+
+    initCustomCursor();
 });

@@ -16,6 +16,34 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Excel OCR Otomasyonu | Yapay Zeka Destekli Tablo Çıkarıcı</title>
     
+    <!-- Meta Açıklamaları ve Arama Motoru Optimizasyonu (SEO) -->
+    <meta name="description" content="Görsellerdeki ve ekran görüntülerindeki tabloları saniyeler içinde yapay zeka ile sekmeli (.xlsx) Excel ve CSV dosyasına dönüştürün. Çoklu sayfa desteği, renk ve stil koruma."/>
+    <meta name="keywords" content="Excel OCR, tablo dönüştürücü, yapay zeka excel, resimden excel, tablo çıkarma, gemini ocr, multi-sheet excel"/>
+    <meta name="author" content="Asteria Excel OCR"/>
+    <meta name="theme-color" content="#2563eb"/>
+
+    <!-- Open Graph (Facebook, WhatsApp, LinkedIn, Telegram Paylaşım Önizlemesi) -->
+    <meta property="og:type" content="website"/>
+    <meta property="og:url" content="https://excelas.vercel.app/"/>
+    <meta property="og:title" content="Excel OCR Otomasyonu | Yapay Zeka ile Tablo Dönüştürücü"/>
+    <meta property="og:description" content="Ekran görüntüleri ve fotoğraflardaki tabloları renkleri, sayıları ve sekmeleriyle eksiksiz Excel (.xlsx) çalışma kitabına çevirin."/>
+    <meta property="og:image" content="https://excelas.vercel.app/assets/og_preview.png"/>
+    <meta property="og:image:secure_url" content="https://excelas.vercel.app/assets/og_preview.png"/>
+    <meta property="og:image:type" content="image/png"/>
+    <meta property="og:image:width" content="1200"/>
+    <meta property="og:image:height" content="630"/>
+    <meta property="og:image:alt" content="Asteria Excel OCR - Görselleri Çoklu Sayfalı Excel'e Dönüştürün"/>
+    <meta property="og:site_name" content="Asteria Excel OCR"/>
+    <meta property="og:locale" content="tr_TR"/>
+
+    <!-- Twitter Card (X / Twitter Paylaşım Önizlemesi) -->
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:url" content="https://excelas.vercel.app/"/>
+    <meta name="twitter:title" content="Excel OCR Otomasyonu | Yapay Zeka ile Tablo Dönüştürücü"/>
+    <meta name="twitter:description" content="Görsellerdeki tabloları çoklu sayfa desteğiyle anında sekmeli Excel (.xlsx) ve CSV'ye dönüştürün."/>
+    <meta name="twitter:image" content="https://excelas.vercel.app/assets/og_preview.png"/>
+    <meta name="twitter:image:alt" content="Asteria Excel OCR - Görseli Excel'e Dönüştür"/>
+
     <!-- Google Fonts (Inter) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     
@@ -29,6 +57,10 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
+    <!-- Özel Tasarım İmleç Elemanları (Custom Cursor) -->
+    <div class="custom-cursor-dot" id="custom-cursor-dot" aria-hidden="true"></div>
+    <div class="custom-cursor-ring" id="custom-cursor-ring" aria-hidden="true"></div>
+
     <!-- Arka plan estetik baloncuk animasyonları -->
     <div class="background-orbs" aria-hidden="true">
         <div class="orb orb-1"></div>
