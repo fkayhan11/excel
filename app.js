@@ -57,6 +57,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeSheetIndex = 0; // O an seçili olan / yapıştırma yapılan sayfa indeksi
     let isCooldownActive = false;
     let modalCountdownTimer = null;
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
     function initTheme() {
         const savedTheme = localStorage.getItem('asteria_theme') || 'light';
         applyTheme(savedTheme);
@@ -472,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="sheet-tab-body">
                     <div class="sheet-preview-mini">
-                        ${sheet.base64 ? `<img src="${sheet.base64}" alt="Sayfa ${idx + 1}" />` : `<i class="fa-regular fa-file"></i>`}
+                        ${sheet.base64 && sheet.base64.startsWith('data:image/') ? `<img src="${sheet.base64}" alt="Sayfa ${idx + 1}" />` : `<i class="fa-regular fa-file"></i>`}
                     </div>
                     <div class="sheet-order-arrows">
                         <button type="button" class="btn-order-arrow btn-move-left" title="Sola Taşı (Önceki Sekme Yap)" data-index="${idx}" ${idx === 0 ? 'disabled' : ''}>
@@ -803,7 +813,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tempImg = new Image();
                 tempImg.src = e.target.result;
                 tempImg.onload = () => {
-                    const MAX_DIMENSION = 1200;
+                    const MAX_DIMENSION = 2000;
                     let width = tempImg.width;
                     let height = tempImg.height;
 
@@ -821,8 +831,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     canvas.width = width;
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
+                    // Fill white background to prevent transparent PNGs from becoming solid black in JPEG format
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, width, height);
                     ctx.drawImage(tempImg, 0, 0, width, height);
-                    const base64 = canvas.toDataURL('image/jpeg', 0.80);
+                    const base64 = canvas.toDataURL('image/jpeg', 0.88);
                     resolve(base64);
                 };
                 tempImg.onerror = reject;
@@ -941,6 +954,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             let targetName = excelTargetInput.value.trim() || 'tablo_verisi';
+            // Sanitize target file name against path traversal, special characters, and quotes
+            targetName = targetName.replace(/[\/\\:\*\?"<>\|]/g, '_').replace(/\.\./g, '_').trim();
             if (!targetName.toLowerCase().endsWith('.xlsx')) {
                 targetName += '.xlsx';
             }
@@ -1035,12 +1050,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const downloadUrl = URL.createObjectURL(blob);
                 const finalFileName = targetName;
+                const safeDownloadName = escapeHtml(finalFileName);
                 const sheetBadgeText = data.sheet_count > 1 ? ` (${data.sheet_count} Sayfalı Excel)` : '';
                 
                 
                 const actionHtml = `
                     <div class="result-actions">
-                        <a href="${downloadUrl}" class="btn-download" download="${finalFileName}">
+                        <a href="${downloadUrl}" class="btn-download" download="${safeDownloadName}">
                             <i class="fa-solid fa-file-excel"></i> Excel İndir (.xlsx)${sheetBadgeText}
                         </a>
                         <button type="button" class="btn-csv-download" id="btn-csv-download" title="UTF-8 formatında virgülle ayrılmış değerler">
@@ -1083,8 +1099,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                             ${row.map(cell => {
                                                 const tag = rIdx === 0 ? 'th' : 'td';
                                                 const isBold = cell.bold ? 'font-weight:700;' : '';
-                                                const bg = cell.bg_color && cell.bg_color !== '#FFFFFF' ? `background-color:${cell.bg_color};` : '';
-                                                return `<${tag} style="${isBold}${bg}">${cell.value !== undefined && cell.value !== null ? cell.value : ''}</${tag}>`;
+                                                let bg = '';
+                                                if (cell.bg_color && /^#[0-9a-fA-F]{6}$/.test(cell.bg_color) && cell.bg_color.toUpperCase() !== '#FFFFFF') {
+                                                    bg = `background-color:${cell.bg_color};`;
+                                                }
+                                                const rawVal = cell.value !== undefined && cell.value !== null ? cell.value : '';
+                                                return `<${tag} style="${isBold}${bg}">${escapeHtml(rawVal)}</${tag}>`;
                                             }).join('')}
                                         </tr>
                                     `).join('')}
@@ -1140,17 +1160,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (btnCopy) {
                     btnCopy.addEventListener('click', () => {
                         let tsv = '';
+                        const formatCellForTsv = (c) => {
+                            let text = (c.value !== undefined && c.value !== null ? c.value.toString() : '').replace(/[\t\n\r]/g, ' ');
+                            const trimmed = text.trim();
+                            if (/^[=\+\-@\t\r|%]/.test(trimmed)) {
+                                const numTest = trimmed.replace(/\s+/g, '').replace(',', '.');
+                                if (isNaN(Number(numTest))) {
+                                    text = "'" + text;
+                                }
+                            }
+                            return text;
+                        };
                         if (Array.isArray(data.all_tables) && data.all_tables.length > 1) {
                             tsv = data.all_tables.map((tbl, idx) => {
                                 const header = `--- Sayfa ${idx + 1} ---`;
                                 const rows = tbl.map(row => 
-                                    row.map(c => (c.value !== undefined && c.value !== null ? c.value.toString() : '').replace(/[\t\n]/g, ' ')).join('\t')
+                                    row.map(formatCellForTsv).join('\t')
                                 ).join('\n');
                                 return `${header}\n${rows}`;
                             }).join('\n\n');
                         } else if (Array.isArray(data.table_data)) {
                             tsv = data.table_data.map(row => 
-                                row.map(c => (c.value !== undefined && c.value !== null ? c.value.toString() : '').replace(/[\t\n]/g, ' ')).join('\t')
+                                row.map(formatCellForTsv).join('\t')
                             ).join('\n');
                         }
                         
@@ -1186,8 +1217,9 @@ document.addEventListener('DOMContentLoaded', () => {
             progressTextNode.style.display = 'none';
             triggerErrorShake();
             
-            let errorMsg = err.message;
-            if (errorMsg === "Failed to fetch") errorMsg = "İnternet bağlantınızı veya sunucu durumunu kontrol edin.";
+            let rawMsg = err.message || 'Bilinmeyen bir hata oluştu.';
+            if (rawMsg === "Failed to fetch") rawMsg = "İnternet bağlantınızı veya sunucu durumunu kontrol edin.";
+            const errorMsg = escapeHtml(rawMsg);
 
             showResult(`<strong><i class="fa-solid fa-circle-exclamation"></i> Bilgi:</strong> ${errorMsg}`, 'error');
         } finally {
@@ -1209,7 +1241,15 @@ document.addEventListener('DOMContentLoaded', () => {
             tbl.forEach(row => {
                 const line = row.map(cell => {
                     let val = cell.value !== undefined && cell.value !== null ? cell.value.toString() : '';
-                    if (val.includes('"') || val.includes(';') || val.includes(',') || val.includes('\n')) {
+                    // Prevent CSV/Formula Injection (DDE attacks in spreadsheet software)
+                    const trimmed = val.trim();
+                    if (/^[=\+\-@\t\r|%]/.test(trimmed)) {
+                        const numTest = trimmed.replace(/\s+/g, '').replace(',', '.');
+                        if (isNaN(Number(numTest))) {
+                            val = "'" + val;
+                        }
+                    }
+                    if (val.includes('"') || val.includes(';') || val.includes(',') || val.includes('\n') || val.includes('\r')) {
                         val = '"' + val.replace(/"/g, '""') + '"';
                     }
                     return val;
@@ -1225,7 +1265,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = filename.replace(/\.xlsx$/i, '') + '.csv';
+        const safeBaseName = (filename || 'tablo_verisi').replace(/[^a-zA-Z0-9_\-\u00C0-\u017F\s.]/g, '_');
+        a.download = safeBaseName.replace(/\.xlsx$/i, '') + '.csv';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

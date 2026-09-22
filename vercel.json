@@ -31,12 +31,27 @@
   ],
   "routes": [
     {
+      "src": "/(\\.env.*|\\.git.*|.*\\.py|.*\\.md|requirements\\.txt|vercel\\.json|license.*)",
+      "status": 404
+    },
+    {
       "src": "/api/(.*)",
-      "dest": "/api/index.py"
+      "dest": "/api/index.py",
+      "headers": {
+        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+        "X-Content-Type-Options": "nosniff"
+      }
     },
     {
       "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "/$1",
+      "headers": {
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=()"
+      }
     }
   ]
 }

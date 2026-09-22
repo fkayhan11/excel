@@ -1,19 +1,28 @@
-# Gizli dosyalar (BUNLAR GITHUB'A GİTMEMELİ)
+# Gizli ve Hassas Yapılandırma Dosyaları (GITHUB'A GİTMEMELİ)
 .env
 .env.local
 .env.*
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.secret
+credentials.json
 
-# MacOS sistem dosyaları
+# MacOS ve İşletim Sistemi Dosyaları
 .DS_Store
+Thumbs.db
 
-# Python gereksinimleri
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 .venv/
 venv/
 env/
+*.log
 
-# Node/Vercel dosyaları
+# Node/Vercel
 .vercel/
 node_modules/
