@@ -65,10 +65,9 @@ last_cleanup = 0.0
 AVAILABLE_MODELS = [
     'gemini-flash-lite-latest',
     'gemini-3.1-flash-lite',
+    'gemini-2.5-flash-lite',
     'gemini-flash-latest',
-    'gemini-3.6-flash',
-    'gemini-3.7-flash',
-    'gemini-2.5-flash'
+    'gemini-3.6-flash'
 ]
 
 ALLOWED_STATIC_EXTENSIONS = {
@@ -647,7 +646,16 @@ def convert():
                     result_text = result_text.rsplit("```", 1)[0]
                 result_text = result_text.strip()
 
-                parsed_data = json.loads(result_text)
+                try:
+                    parsed_data = json.loads(result_text)
+                except Exception:
+                    start_brace = result_text.find('{')
+                    end_brace = result_text.rfind('}')
+                    if start_brace != -1 and end_brace != -1 and end_brace > start_brace:
+                        parsed_data = json.loads(result_text[start_brace:end_brace+1])
+                    else:
+                        raise
+
                 if "error" in parsed_data and parsed_data["error"] == "NO_TABLE_FOUND":
                     return idx, None, "NO_TABLE_FOUND"
                 if "table" in parsed_data:

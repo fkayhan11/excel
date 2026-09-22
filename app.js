@@ -860,7 +860,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (incoming.length > 1) {
                 
                 switchMode('multi');
-                setSheetCount(Math.min(4, Math.max(2, incoming.length)));
+                setSheetCount(Math.min(MAX_SHEETS, Math.max(2, incoming.length)));
                 for (let i = 0; i < Math.min(sheets.length, incoming.length); i++) {
                     const b64 = await compressImageFile(incoming[i]);
                     sheets[i] = { name: incoming[i].name, base64: b64 };

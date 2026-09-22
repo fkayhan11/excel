@@ -21,10 +21,6 @@
       "use": "@vercel/static"
     },
     {
-      "src": "logo_cropped.png",
-      "use": "@vercel/static"
-    },
-    {
       "src": "assets/**",
       "use": "@vercel/static"
     }
