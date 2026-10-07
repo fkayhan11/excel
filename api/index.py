@@ -44,25 +44,45 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 rate_limit_lock = threading.Lock()
 genai_lock = threading.Lock()
 
-# Load environment variables if .env exists safely
-env_path = os.path.join(BASE_DIR, '.env')
-if os.path.exists(env_path):
-    try:
-        with open(env_path, 'r', encoding='utf-8') as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    key, val = line.split('=', 1)
-                    key = key.strip()
-                    val = val.strip().strip('"').strip("'")
-                    if key not in os.environ:
-                        os.environ[key] = val
-    except Exception:
-        pass
+def get_api_keys() -> list[str]:
+    """Dynamically resolves GEMINI_API_KEY from environment or .env file."""
+    # 1. Try from os.environ
+    raw_keys = os.environ.get("GEMINI_API_KEY", "").strip()
+    if not raw_keys:
+        # Also check common alternative names
+        raw_keys = (os.environ.get("GOOGLE_API_KEY", "") or os.environ.get("GEMINI_KEY", "")).strip()
 
-raw_keys = os.environ.get("GEMINI_API_KEY", "").strip()
-API_KEYS = [k.strip().strip('"').strip("'") for k in raw_keys.split(",") if k.strip() and k.strip() != "buraya_google_api_kodunuzu_yapistirin"]
+    # 2. If not found, reload .env safely
+    if not raw_keys:
+        for fname in ('.env', '.env.local', '.env.production'):
+            epath = os.path.join(BASE_DIR, fname)
+            if os.path.exists(epath):
+                try:
+                    with open(epath, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            line = line.strip()
+                            if line and not line.startswith('#') and '=' in line:
+                                k, v = line.split('=', 1)
+                                k = k.strip()
+                                v = v.strip().strip('"').strip("'")
+                                if k in ("GEMINI_API_KEY", "GOOGLE_API_KEY", "GEMINI_KEY") and v:
+                                    os.environ[k] = v
+                                    raw_keys = v
+                                    break
+                except Exception:
+                    pass
+            if raw_keys:
+                break
 
+    keys = [
+        k.strip().strip('"').strip("'")
+        for k in raw_keys.split(",")
+        if k.strip() and k.strip() != "buraya_google_api_kodunuzu_yapistirin"
+    ]
+    return keys
+
+# Initialize API_KEYS
+API_KEYS = get_api_keys()
 if API_KEYS:
     try:
         genai.configure(api_key=API_KEYS[0], transport='rest')
@@ -469,7 +489,11 @@ def generate_table_json(img_data: bytes, mime_type: str, prompt: str):
         temperature=0.0
     )
 
-    for key in API_KEYS:
+    active_keys = get_api_keys()
+    if not active_keys:
+        raise Exception("GEMINI_API_KEY yapılandırması eksik.")
+
+    for key in active_keys:
         with genai_lock:
             try:
                 genai.configure(api_key=key, transport='rest')
@@ -554,7 +578,8 @@ def normalize_raw_table(raw_table):
 @app.route('/api/convert', methods=['POST'])
 @app.route('/convert', methods=['POST'])
 def convert():
-    if not API_KEYS:
+    current_keys = get_api_keys()
+    if not current_keys:
         return jsonify({
             "status": "error",
             "message": "Sistem API yapılandırması eksik. Lütfen GEMINI_API_KEY anahtarını kontrol edin."
