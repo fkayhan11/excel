@@ -111,6 +111,7 @@ This application is pre-configured for Vercel Serverless Functions via [`vercel.
 
 ---
 
-## License
+## Lisans / License
 
-This project is licensed under the [MIT License](./LICENSE).
+Bu proje **Özel Mülkiyet (Proprietary - All Rights Reserved)** lisansına tabidir. Telif hakkı sahibinin yazılı izni olmaksızın kaynak kodlarının veya herhangi bir parçasının kopyalanması, çoğaltılması, dağıtılması, değiştirilmesi veya ticari/gayriticari amaçla kullanılması kesinlikle yasaktır. Detaylar için [`LICENSE`](./LICENSE) dosyasına bakınız.
+
