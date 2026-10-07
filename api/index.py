@@ -13,9 +13,22 @@ from concurrent.futures import ThreadPoolExecutor
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
+import sys
+import socket
+
+# Setup SSL CA bundle using certifi to fix macOS Python SSL certificate verify failures
+try:
+    import certifi
+    if not os.environ.get('SSL_CERT_FILE'):
+        os.environ['SSL_CERT_FILE'] = certifi.where()
+    if not os.environ.get('REQUESTS_CA_BUNDLE'):
+        os.environ['REQUESTS_CA_BUNDLE'] = certifi.where()
+except ImportError:
+    pass
+
 warnings.filterwarnings('ignore', category=FutureWarning)
 import google.generativeai as genai
-from google.api_core.exceptions import ResourceExhausted, PermissionDenied, Unauthenticated
+from google.api_core.exceptions import ResourceExhausted, PermissionDenied, Unauthenticated, ServiceUnavailable, NotFound
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
@@ -52,7 +65,7 @@ API_KEYS = [k.strip().strip('"').strip("'") for k in raw_keys.split(",") if k.st
 
 if API_KEYS:
     try:
-        genai.configure(api_key=API_KEYS[0])
+        genai.configure(api_key=API_KEYS[0], transport='rest')
     except Exception:
         pass
 
@@ -64,10 +77,12 @@ last_cleanup = 0.0
 
 AVAILABLE_MODELS = [
     'gemini-flash-lite-latest',
-    'gemini-3.1-flash-lite',
-    'gemini-2.5-flash-lite',
+    'gemini-3.5-flash-lite',
     'gemini-flash-latest',
-    'gemini-3.6-flash'
+    'gemini-3.8-flash',
+    'gemini-3.7-flash',
+    'gemini-3.5-flash',
+    'gemini-3.1-flash-lite'
 ]
 
 ALLOWED_STATIC_EXTENSIONS = {
@@ -457,7 +472,7 @@ def generate_table_json(img_data: bytes, mime_type: str, prompt: str):
     for key in API_KEYS:
         with genai_lock:
             try:
-                genai.configure(api_key=key)
+                genai.configure(api_key=key, transport='rest')
             except Exception as e:
                 last_error = e
                 continue
@@ -474,7 +489,7 @@ def generate_table_json(img_data: bytes, mime_type: str, prompt: str):
                 )
                 if response and response.text:
                     return response.text.strip(), model_name
-            except ResourceExhausted as e:
+            except (ResourceExhausted, ServiceUnavailable, NotFound) as e:
                 last_error = e
                 continue
             except (PermissionDenied, Unauthenticated) as e:
